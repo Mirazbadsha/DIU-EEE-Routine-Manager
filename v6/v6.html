@@ -1,0 +1,2585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DIU EEE Routine Manager - Enhanced</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            /* Enhanced Color Palette with Better Contrast */
+            --bg-primary: #0a1628;
+            --bg-secondary: #0f1e3a;
+            --bg-tertiary: #1a2942;
+
+            --surface-primary: #1e3a5f;
+            --surface-secondary: #2d4a6f;
+            --surface-tertiary: #3a5a7f;
+
+            /* Improved text colors */
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --text-muted: #a0aec0;
+            --text-disabled: #64748b;
+
+            /* Brighter accent colors */
+            --accent-cyan: #22d3ee;
+            --accent-cyan-hover: #06b6d4;
+            --accent-green: #34d399;
+            --accent-green-hover: #10b981;
+            --accent-silver: #94a3b8;
+            --accent-gold: #fbbf24;
+
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #ef4444;
+            --info: #22d3ee;
+
+            /* Better border visibility */
+            --border-primary: #475569;
+            --border-secondary: #64748b;
+            --border-accent: #22d3ee;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 20px rgba(34, 211, 238, 0.4);
+
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            gap: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            background: var(--surface-primary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-primary);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            flex: 1;
+        }
+
+        .diu-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .header-content h1 {
+            font-size: clamp(24px, 3vw, 36px);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            background: linear-gradient(135deg, #22d3ee, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            filter: brightness(1.1);
+        }
+
+        .header-content p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            max-width: 700px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            padding: 10px 18px;
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            background: var(--surface-secondary);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(34, 211, 238, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-hover));
+            border-color: var(--accent-cyan);
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--accent-cyan-hover), var(--accent-cyan));
+            box-shadow: 0 0 25px rgba(34, 211, 238, 0.5);
+        }
+
+        .btn-sm {
+            padding: 7px 14px;
+            font-size: 12px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: var(--surface-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+
+        .controls input[type="file"] {
+            display: none;
+        }
+
+        .hint {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        /* Filter Panel */
+        .filter-panel {
+            background: var(--surface-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .filter-field label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-field input,
+        .filter-field select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-field input:focus,
+        .filter-field select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+            background: var(--bg-tertiary);
+        }
+
+        /* Empty Room Finder */
+        .empty-room-finder {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-primary);
+        }
+
+        .empty-room-finder h3 {
+            font-size: 14px;
+            color: var(--accent-cyan);
+            margin-bottom: var(--spacing-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .room-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+
+        .room-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .room-badge.available {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .no-rooms {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* Filter Chips */
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background: var(--surface-secondary);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-xl);
+            padding: 6px 14px;
+            font-size: 12px;
+            color: var(--accent-cyan);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chip button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .chip button:hover {
+            color: var(--danger);
+        }
+
+        /* Table Styles */
+        .table-container {
+            background: var(--surface-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--surface-secondary), var(--surface-tertiary));
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        thead th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--accent-cyan);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        thead th:hover {
+            background: var(--surface-tertiary);
+            color: var(--accent-green);
+        }
+
+        tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-primary);
+            font-size: 13px;
+            vertical-align: middle;
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(34, 211, 238, 0.08);
+            box-shadow: inset 0 0 0 1px var(--accent-cyan);
+        }
+
+        /* Teacher Link */
+        .teacher-link {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px dashed var(--accent-cyan);
+        }
+
+        .teacher-link:hover {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-theory {
+            background: rgba(34, 211, 238, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .badge-lab {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: var(--spacing-lg);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            background: var(--surface-primary);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--surface-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--surface-tertiary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: var(--spacing-lg);
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--border-primary);
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+            background: var(--surface-secondary);
+        }
+
+        /* Teacher Modal Specific */
+        .teacher-details {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .detail-row {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-primary);
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .contact-link {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .contact-link:hover {
+            color: var(--accent-green);
+            text-decoration: underline;
+        }
+
+        .contact-link::before {
+            content: '📧';
+            font-size: 16px;
+        }
+
+        .contact-link[href^="tel"]::before {
+            content: '📞';
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .form-field label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            padding: 11px 13px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+            background: var(--bg-tertiary);
+        }
+
+        .form-field textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .form-field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Radio Group */
+        .radio-group {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-sm);
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-option:hover {
+            border-color: var(--accent-cyan);
+            background: var(--surface-secondary);
+        }
+
+        .radio-option input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"]:checked+label {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* Column Selection */
+        .column-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--spacing-sm);
+        }
+
+        .column-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm);
+            background: var(--bg-secondary);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .column-item:hover {
+            background: var(--surface-secondary);
+            border-color: var(--accent-cyan);
+        }
+
+        .column-item input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .column-item label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-md {
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-primary);
+            border-radius: 50%;
+            border-top-color: var(--accent-cyan);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Messages */
+        .message {
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            animation: slideIn 0.3s ease;
+        }
+
+        .message-success {
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .message-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        /* Developer Info Modal */
+        .developer-card {
+            text-align: center;
+            padding: var(--spacing-lg);
+        }
+
+        .developer-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent-cyan);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        .developer-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .developer-batch,
+        .developer-university {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .developer-links {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            margin-top: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .developer-links a {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--surface-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .developer-links a:hover {
+            border-color: var(--accent-cyan);
+            background: var(--surface-tertiary);
+            transform: translateY(-2px);
+        }
+
+        .developer-links .icon {
+            font-size: 18px;
+        }
+
+        /* Admin Login Modal */
+        .admin-login-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .login-error {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: var(--radius-sm);
+            color: var(--danger);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Admin-only elements */
+        .admin-only {
+            display: none;
+        }
+
+        .admin-logged-in .admin-only {
+            display: inline-flex;
+        }
+
+        .admin-logged-in label.admin-only {
+            display: inline-flex;
+        }
+
+        .admin-logged-in input.admin-only {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .diu-logo {
+                width: 50px;
+                height: 50px;
+            }
+
+            .header-actions {
+                justify-content: flex-start;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal {
+                max-height: 90vh;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            thead th,
+            tbody td {
+                padding: 10px 8px;
+            }
+
+            .developer-photo {
+                width: 100px;
+                height: 100px;
+            }
+
+            .developer-links {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .developer-links a {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <img src="diu-logo.png" alt="DIU Logo" class="diu-logo" id="diuLogo">
+                <div class="header-content">
+                    <h1>DIU EEE Routine Manager</h1>
+                    <p>Professional routine management for Electrical & Electronic Engineering. Import DIU Excel files,
+                        manage schedules, and export with customizable formats.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-sm" id="btnDeveloperInfo">👨‍💻 Developer</button>
+                <button class="btn btn-sm" id="btnAdminLogin">� Admin PLogin</button>
+                <button class="btn btn-sm hidden" id="btnAdminLogout">🚪 Logout</button>
+                <button class="btn btn-sm admin-only" id="btnExportExcel">📊 Export Excel</button>
+                <button class="btn btn-sm admin-only" id="btnExportPDF">📄 Export PDF</button>
+                <button class="btn btn-sm admin-only" id="btnBackupJSON">💾 Backup JSON</button>
+            </div>
+        </header>
+
+        <div class="control-panel">
+            <div class="controls">
+                <label class="btn admin-only" for="fileExcel">📊 Import Routine</label>
+                <input class="admin-only" id="fileExcel" type="file" accept=".xls,.xlsx" />
+
+                <label class="btn admin-only" for="fileTeacher">👨‍🏫 Import Teacher Info</label>
+                <input class="admin-only" id="fileTeacher" type="file" accept=".xls,.xlsx" />
+
+                <label class="btn admin-only" for="fileCourseTitle">📚 Import Course Titles</label>
+                <input class="admin-only" id="fileCourseTitle" type="file" accept=".xls,.xlsx" />
+
+                <label class="btn admin-only" for="fileJSON">📥 Restore JSON</label>
+                <input class="admin-only" id="fileJSON" type="file" accept="application/json" />
+
+                <button class="btn btn-primary admin-only" id="btnAddRow">➕ Add Class</button>
+                <button class="btn admin-only" id="btnClearAll">🗑️ Clear All</button>
+
+                <span class="hint">
+                    <span class="spinner" style="display:none" id="loadingSpinner"></span>
+                    <span id="statusText">Data auto-saved to browser</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="filter-panel">
+            <div class="filters" id="filters"></div>
+            <div class="filter-chips" id="filterChips"></div>
+
+            <div class="empty-room-finder">
+                <h3>🏫 Available Rooms</h3>
+                <div id="emptyRoomsList" class="room-list">
+                    <p class="hint">Select a day or time slot to find available rooms</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Teacher Details Modal -->
+    <div class="modal-overlay hidden" id="teacherModal">
+        <div class="modal teacher-modal">
+            <div class="modal-header">
+                <h3 id="teacherModalTitle">Teacher Details</h3>
+                <button class="close-btn" id="closeTeacherModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="teacher-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Name</span>
+                        <span class="detail-value" id="teacherName"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone</span>
+                        <a href="#" class="detail-value contact-link" id="teacherPhone"></a>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email</span>
+                        <a href="#" class="detail-value contact-link" id="teacherEmail"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column Selection Modal -->
+    <div class="modal-overlay hidden" id="columnModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Select Columns to Export</h3>
+                <button class="close-btn" onclick="hideColumnSelectionModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-md">
+                    <button class="btn btn-sm" id="selectAllColumns">Select All</button>
+                    <button class="btn btn-sm" id="selectNoneColumns">Select None</button>
+                </div>
+                <div class="column-list" id="columnList"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelColumnSelection">Cancel</button>
+                <button class="btn btn-primary" id="confirmColumnSelection">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Export Options Modal -->
+    <div class="modal-overlay hidden" id="pdfModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>PDF Export Options</h3>
+                <button class="close-btn" onclick="hidePDFModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label>Color Mode</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="colorMode" name="pdfColorMode" value="color" checked>
+                            <label for="colorMode">Color</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="bwMode" name="pdfColorMode" value="bw">
+                            <label for="bwMode">Black & White</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelPDFExport">Cancel</button>
+                <button class="btn btn-primary" id="confirmPDFExport">Export PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row Editor Modal -->
+    <div class="modal-overlay hidden" id="rowModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="rowModalTitle">Add New Class</h3>
+                <button class="close-btn" onclick="hideRowModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form class="form-grid" id="rowForm"></form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelRowEdit">Cancel</button>
+                <button class="btn btn-primary" id="saveRow">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Developer Info Modal -->
+    <div class="modal-overlay hidden" id="developerModal">
+        <div class="modal developer-modal">
+            <div class="modal-header">
+                <h3>Developer Information</h3>
+                <button class="close-btn" id="closeDeveloperModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="developer-card">
+                    <img src="developer.jpg" alt="Sheikh Miraz Uddin Badsha" class="developer-photo"
+                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzJkNGE2ZiIvPjx0ZXh0IHg9IjYwIiB5PSI2NSIgZm9udC1zaXplPSI0MCIgZmlsbD0iIzIyZDNlZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIj7wn5G8PC90ZXh0Pjwvc3ZnPg=='">
+                    <h4 class="developer-name">Sheikh Miraz Uddin Badsha</h4>
+                    <p class="developer-batch">Batch: 221(37), EEE Department</p>
+                    <p class="developer-university">Daffodil International University</p>
+                    <div class="developer-links">
+                        <a href="https://www.linkedin.com/in/sheikh-miraz-uddin-badsha-b813621b4" target="_blank"
+                            rel="noopener noreferrer">
+                            <span class="icon">🔗</span> LinkedIn
+                        </a>
+                        <a href="mailto:badsha33-1686@diu.edu.bd">
+                            <span class="icon">📧</span> Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div class="modal-overlay hidden" id="adminLoginModal">
+        <div class="modal admin-login-modal">
+            <div class="modal-header">
+                <h3>Admin Login</h3>
+                <button class="close-btn" id="closeAdminLoginModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="adminLoginForm" class="admin-login-form">
+                    <div class="form-field">
+                        <label>Email</label>
+                        <input type="email" id="adminEmail" required placeholder="admin@diu.edu.bd"
+                            autocomplete="email">
+                    </div>
+                    <div class="form-field">
+                        <label>Password</label>
+                        <input type="password" id="adminPassword" required placeholder="Enter password"
+                            autocomplete="current-password">
+                    </div>
+                    <div id="loginError" class="login-error hidden"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelLogin">Cancel</button>
+                <button class="btn btn-primary" id="confirmLogin">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <script></script>
+    </div>
+    // Utility Functions
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    // Data Structure
+    const COLUMNS = [
+    { key: 'day', label: 'Day', type: 'select', options: ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+    'Thursday'] },
+    { key: 'type', label: 'Type', type: 'select', options: ['Theory', 'Lab'] },
+    { key: 'time', label: 'Slot', type: 'text', placeholder: '8:20–9:50' },
+    { key: 'room', label: 'Room', type: 'text', placeholder: '301' },
+    { key: 'levelTerm', label: 'Level–Term', type: 'text', placeholder: 'L1–T1' },
+    { key: 'section', label: 'Section', type: 'text', placeholder: 'A' },
+    { key: 'classCode', label: 'Class Code', type: 'text', placeholder: 'EEE-101' },
+    { key: 'courseTitle', label: 'Course Title', type: 'text', placeholder: 'Electrical Circuits' },
+    { key: 'teacher', label: 'Teacher', type: 'text', placeholder: 'MRK' },
+    { key: 'notes', label: 'Notes', type: 'textarea', placeholder: 'Optional notes' }
+    ];
+
+    const STORAGE_KEY = 'diu_eee_routine_v3';
+    const TEACHER_STORAGE_KEY = 'diu_eee_teacher_data';
+    const COURSE_TITLE_STORAGE_KEY = 'diu_eee_course_titles';
+    const OLD_STORAGE_KEY = 'diu_eee_routine_v2';
+
+    // Custom day order for sorting
+    const DAY_ORDER = {
+    'Saturday': 0,
+    'Sunday': 1,
+    'Monday': 2,
+    'Tuesday': 3,
+    'Wednesday': 4,
+    'Thursday': 5
+    };
+
+    // State
+    let rows = [];
+    let filteredRows = [];
+    let teacherData = {};
+    let courseTitleData = {};
+    let sortConfig = { key: 'day', direction: 'asc' };
+    let filters = {};
+    let currentExportType = null;
+    let editingRowIndex = null;
+    let selectedColumns = [];
+    let diuLogoBase64 = '';
+
+    const DIU_LOGO =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzIyZDNlZSIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSIzMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCI+RElVPC90ZXh0Pjwvc3ZnPg==';
+
+    // Admin Authentication
+    const ADMIN_CREDENTIALS = {
+    email: 'admin@diu.edu.bd',
+    password: 'admin123'
+    };
+    const AUTH_SESSION_KEY = 'diu_eee_admin_session';
+    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+    // Authentication Functions
+    function isAdminLoggedIn() {
+    const session = sessionStorage.getItem(AUTH_SESSION_KEY);
+    if (!session) return false;
+
+    try {
+    const data = JSON.parse(session);
+    const now = Date.now();
+    const sessionAge = now - data.timestamp;
+
+    if (sessionAge > SESSION_TIMEOUT) {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    return false;
+    }
+
+    return data.isAdmin === true;
+    } catch (error) {
+    return false;
+    }
+    }
+
+    function createAdminSession() {
+    const sessionData = {
+    isAdmin: true,
+    timestamp: Date.now()
+    };
+    sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sessionData));
+    }
+
+    function clearAdminSession() {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    }
+
+    function validateAdminCredentials(email, password) {
+    return email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password;
+    }
+
+    function updateUIForAuthState() {
+    const isAdmin = isAdminLoggedIn();
+
+    // Update body class for CSS
+    if (isAdmin) {
+    document.body.classList.add('admin-logged-in');
+    } else {
+    document.body.classList.remove('admin-logged-in');
+    }
+
+    // Show/hide login/logout buttons
+    const loginBtn = $('#btnAdminLogin');
+    const logoutBtn = $('#btnAdminLogout');
+
+    if (isAdmin) {
+    loginBtn?.classList.add('hidden');
+    logoutBtn?.classList.remove('hidden');
+    } else {
+    loginBtn?.classList.remove('hidden');
+    logoutBtn?.classList.add('hidden');
+    }
+    }
+
+    // Developer Info Modal Functions
+    function showDeveloperModal() {
+    $('#developerModal').classList.remove('hidden');
+    }
+
+    function hideDeveloperModal() {
+    $('#developerModal').classList.add('hidden');
+    }
+
+    // Admin Login Modal Functions
+    function showAdminLoginModal() {
+    $('#adminLoginModal').classList.remove('hidden');
+    $('#adminEmail').value = '';
+    $('#adminPassword').value = '';
+    $('#loginError').classList.add('hidden');
+    }
+
+    function hideAdminLoginModal() {
+    $('#adminLoginModal').classList.add('hidden');
+    }
+
+    function handleAdminLogin() {
+    const email = $('#adminEmail').value.trim();
+    const password = $('#adminPassword').value;
+    const errorDiv = $('#loginError');
+
+    if (!email || !password) {
+    errorDiv.textContent = 'Please enter both email and password';
+    errorDiv.classList.remove('hidden');
+    return;
+    }
+
+    if (validateAdminCredentials(email, password)) {
+    createAdminSession();
+    updateUIForAuthState();
+    hideAdminLoginModal();
+    updateStatus('Admin logged in successfully', 'success');
+    } else {
+    errorDiv.textContent = 'Invalid email or password';
+    errorDiv.classList.remove('hidden');
+    }
+    }
+
+    function handleAdminLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+    clearAdminSession();
+    updateUIForAuthState();
+    updateStatus('Logged out successfully', 'success');
+    }
+    }
+
+    // Parse Time
+    function parseTime(input) {
+    if (!input) return '';
+    const cleaned = input.trim().replace(/\s+/g, '');
+    const timeRegex = /^(\d{1,2}):?(\d{2})?\s*[-–—~]\s*(\d{1,2}):?(\d{2})?$/;
+    if (timeRegex.test(cleaned)) {
+    const match = cleaned.match(timeRegex);
+    const startHour = match[1].padStart(2, '0');
+    const startMin = (match[2] || '00').padStart(2, '0');
+    const endHour = match[3].padStart(2, '0');
+    const endMin = (match[4] || '00').padStart(2, '0');
+    return `${startHour}:${startMin}–${endHour}:${endMin}`;
+    }
+    return input;
+    }
+
+    // Parse Level-Term
+    function parseLevelTerm(input) {
+    if (!input) return '';
+    const cleaned = input.trim().toUpperCase();
+    const patterns = [
+    /^L?(\d+)[-–—/]T?(\d+)$/,
+    /^(\d+)[-–—/](\d+)$/,
+    /^L(\d+)T(\d+)$/
+    ];
+    for (const pattern of patterns) {
+    const match = cleaned.match(pattern);
+    if (match) {
+    return `L${match[1]}–T${match[2] || match[1]}`;
+    }
+    }
+    return input;
+    }
+
+    // Data Migration
+    function migrateOldData() {
+    const oldData = localStorage.getItem(OLD_STORAGE_KEY);
+    if (!oldData) return [];
+    try {
+    const oldRows = JSON.parse(oldData);
+    return oldRows.map(row => ({
+    ...row,
+    time: row.time || (row.start && row.end ? `${row.start}–${row.end}` : ''),
+    levelTerm: row.levelTerm || (row.level && row.term ? `L${row.level}–T${row.term}` : '')
+    }));
+    } catch (error) {
+    console.error('Migration failed:', error);
+    return [];
+    }
+    }
+
+    // Load Data
+    function loadData() {
+    const newData = localStorage.getItem(STORAGE_KEY);
+    if (newData) {
+    try {
+    return JSON.parse(newData);
+    } catch (error) {
+    console.error('Failed to parse data:', error);
+    }
+    }
+    return migrateOldData();
+    }
+
+    // Save Data
+    function saveData(data) {
+    try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    updateStatus('Data saved', 'success');
+    } catch (error) {
+    console.error('Failed to save:', error);
+    updateStatus('Save failed', 'error');
+    }
+    }
+
+    // Load Teacher Data
+    function loadTeacherData() {
+    const data = localStorage.getItem(TEACHER_STORAGE_KEY);
+    if (data) {
+    try {
+    return JSON.parse(data);
+    } catch (error) {
+    console.error('Failed to parse teacher data:', error);
+    }
+    }
+    return {};
+    }
+
+    // Save Teacher Data
+    function saveTeacherData(data) {
+    try {
+    localStorage.setItem(TEACHER_STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+    console.error('Failed to save teacher data:', error);
+    }
+    }
+
+    // Load Course Title Data
+    function loadCourseTitleData() {
+    const data = localStorage.getItem(COURSE_TITLE_STORAGE_KEY);
+    if (data) {
+    try {
+    return JSON.parse(data);
+    } catch (error) {
+    console.error('Failed to parse course title data:', error);
+    }
+    }
+    return {};
+    }
+
+    // Save Course Title Data
+    function saveCourseTitleData(data) {
+    try {
+    localStorage.setItem(COURSE_TITLE_STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+    console.error('Failed to save course title data:', error);
+    }
+    }
+
+    // Normalize course code for matching
+    function normalizeCourseCode(code) {
+    if (!code) return '';
+    // Convert to uppercase and trim
+    let normalized = code.toString().trim().toUpperCase();
+    // Replace spaces with hyphens
+    normalized = normalized.replace(/\s+/g, '-');
+    return normalized;
+    }
+
+    // Auto-fill course titles based on class code
+    function autoFillCourseTitles() {
+    let updated = 0;
+    rows.forEach(row => {
+    if (row.classCode) {
+    const normalizedRowCode = normalizeCourseCode(row.classCode);
+
+    // Try exact match first
+    let courseTitle = courseTitleData[row.classCode];
+
+    // If not found, try normalized match
+    if (!courseTitle) {
+    courseTitle = courseTitleData[normalizedRowCode];
+    }
+
+    // If still not found, try case-insensitive match
+    if (!courseTitle) {
+    const upperCode = row.classCode.toUpperCase();
+    courseTitle = courseTitleData[upperCode];
+    }
+
+    // If still not found, search through all keys with normalization
+    if (!courseTitle) {
+    for (const [key, value] of Object.entries(courseTitleData)) {
+    if (normalizeCourseCode(key) === normalizedRowCode) {
+    courseTitle = value;
+    break;
+    }
+    }
+    }
+
+    // Update if found and either empty or different
+    if (courseTitle && row.courseTitle !== courseTitle) {
+    row.courseTitle = courseTitle;
+    updated++;
+    }
+    }
+    });
+    if (updated > 0) {
+    saveData(rows);
+    updateStatus(`Auto-filled ${updated} course titles`, 'success');
+    }
+    return updated;
+    }
+
+    // Update Status
+    function updateStatus(message, type = 'info') {
+    const statusText = $('#statusText');
+    statusText.textContent = message;
+    setTimeout(() => {
+    statusText.textContent = 'Data auto-saved to browser';
+    }, 3000);
+    }
+
+    // Room Finder Module
+    const RoomFinder = {
+    getAllRooms() {
+    return [...new Set(rows.map(row => row.room).filter(Boolean))].sort();
+    },
+
+    findEmptyRooms(day, timeSlot) {
+    const allRooms = this.getAllRooms();
+    const occupiedRooms = rows
+    .filter(row => {
+    let matches = true;
+    if (day) matches = matches && row.day === day;
+    if (timeSlot) matches = matches && row.time === timeSlot;
+    return matches;
+    })
+    .map(row => row.room);
+
+    return allRooms.filter(room => !occupiedRooms.includes(room));
+    },
+
+    getCurrentFilters() {
+    return {
+    day: filters.day || null,
+    timeSlot: filters.time || null
+    };
+    }
+    };
+
+    // Update Empty Rooms Display
+    function updateEmptyRooms() {
+    const { day, timeSlot } = RoomFinder.getCurrentFilters();
+    const emptyRoomsContainer = $('#emptyRoomsList');
+
+    if (!day && !timeSlot) {
+    emptyRoomsContainer.innerHTML = '<p class="hint">Select a day or time slot to find available rooms</p>';
+    return;
+    }
+
+    const emptyRooms = RoomFinder.findEmptyRooms(day, timeSlot);
+
+    if (emptyRooms.length === 0) {
+    emptyRoomsContainer.innerHTML = '<p class="no-rooms">All rooms are occupied for the selected criteria</p>';
+    return;
+    }
+
+    const roomsHTML = emptyRooms.map(room =>
+    `<span class="room-badge available">${room}</span>`
+    ).join('');
+
+    emptyRoomsContainer.innerHTML = roomsHTML;
+    }
+
+    // Render Teacher Cell
+    function renderTeacherCell(teacherInitial) {
+    if (!teacherInitial) return '';
+    const teacher = teacherData[teacherInitial.toUpperCase()];
+
+    if (teacher) {
+    return `<a href="#" class="teacher-link" data-initial="${teacherInitial}">${teacherInitial}</a>`;
+    }
+
+    return teacherInitial;
+    }
+
+    // Show Teacher Modal
+    function showTeacherModal(initial) {
+    const teacher = teacherData[initial.toUpperCase()];
+    if (!teacher) return;
+
+    $('#teacherName').textContent = teacher.name;
+
+    const phoneLink = $('#teacherPhone');
+    phoneLink.textContent = teacher.phone;
+    phoneLink.href = `tel:${teacher.phone}`;
+
+    const emailLink = $('#teacherEmail');
+    emailLink.textContent = teacher.email;
+    emailLink.href = `mailto:${teacher.email}`;
+
+    $('#teacherModal').classList.remove('hidden');
+    }
+
+    // Hide Teacher Modal
+    function hideTeacherModal() {
+    $('#teacherModal').classList.add('hidden');
+    }
+
+    // Render Table
+    function renderTable() {
+    const thead = $('#tableHead');
+    const tbody = $('#tableBody');
+
+    const headerHTML = COLUMNS.map(col =>
+    `<th data-key="${col.key}">
+        ${col.label}
+        ${sortConfig.key === col.key ? (sortConfig.direction === 'asc' ? ' ▲' : ' ▼') : ''}
+    </th>`
+    ).join('') + '<th>Actions</th>';
+
+    thead.innerHTML = `<tr>${headerHTML}</tr>`;
+
+    Array.from(thead.querySelectorAll('th[data-key]')).forEach(th => {
+    th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    sortConfig.direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    sortConfig.key = key;
+    applyFiltersAndSort();
+    });
+    });
+
+    const rowsHTML = filteredRows.map((row, index) => {
+    const originalIndex = rows.indexOf(row);
+    return `<tr>
+        ${COLUMNS.map(col => {
+        let value = row[col.key] || '';
+        if (col.key === 'type') {
+        const badgeClass = value.toLowerCase() === 'lab' ? 'badge-lab' : 'badge-theory';
+        value = `<span class="badge ${badgeClass}">${value}</span>`;
+        } else if (col.key === 'teacher') {
+        value = renderTeacherCell(value);
+        }
+        return `<td>${value}</td>`;
+        }).join('')}
+        <td>
+            <button class="btn btn-sm" onclick="editRow(${originalIndex})">Edit</button>
+
+            <button class="btn btn-sm" onclick="deleteRow(${originalIndex})">Delete</button>
+        </td>
+    </tr>`;
+    }).join('');
+
+    tbody.innerHTML = rowsHTML || '<tr>
+        <td colspan="100%" class="text-center">No data available. Import Excel or add classes manually.</td>
+    </tr>';
+    }
+
+    // Apply Filters and Sort
+    function applyFiltersAndSort() {
+    filteredRows = rows.filter(row => {
+    return Object.entries(filters).every(([key, value]) => {
+    if (!value) return true;
+    const rowValue = (row[key] || '').toString();
+    const filterValue = value.toString();
+
+    // Exact match for teacher initials to avoid SR matching SRC
+    if (key === 'teacher') {
+    return rowValue.toUpperCase() === filterValue.toUpperCase();
+    }
+
+    // Partial match for other fields
+    return rowValue.toLowerCase().includes(filterValue.toLowerCase());
+    });
+    });
+
+    filteredRows.sort((a, b) => {
+    const key = sortConfig.key;
+
+    // Custom sorting for days
+    if (key === 'day') {
+    const aDay = DAY_ORDER[a.day] !== undefined ? DAY_ORDER[a.day] : 999;
+    const bDay = DAY_ORDER[b.day] !== undefined ? DAY_ORDER[b.day] : 999;
+    return sortConfig.direction === 'asc' ? aDay - bDay : bDay - aDay;
+    }
+
+    // Default sorting for other fields
+    let aVal = (a[key] || '').toString().toLowerCase();
+    let bVal = (b[key] || '').toString().toLowerCase();
+    if (aVal < bVal) return sortConfig.direction==='asc' ? -1 : 1; if (aVal> bVal) return sortConfig.direction === 'asc'
+        ? 1 : -1;
+        return 0;
+        });
+
+        renderTable();
+        renderFilterChips();
+        updateEmptyRooms();
+        }
+
+        // Get unique values for dropdown filters
+        function getUniqueValues(key) {
+        const values = [...new Set(rows.map(row => row[key]).filter(Boolean))];
+
+        // Custom sorting for days
+        if (key === 'day') {
+        return values.sort((a, b) => {
+        const aOrder = DAY_ORDER[a] !== undefined ? DAY_ORDER[a] : 999;
+        const bOrder = DAY_ORDER[b] !== undefined ? DAY_ORDER[b] : 999;
+        return aOrder - bOrder;
+        });
+        }
+
+        return values.sort();
+        }
+
+        // Render Filters
+        function renderFilters() {
+        const filtersContainer = $('#filters');
+
+        const uniqueRooms = getUniqueValues('room');
+        const uniqueSlots = getUniqueValues('time');
+        const uniqueLevelTerms = getUniqueValues('levelTerm');
+        const uniqueSections = getUniqueValues('section');
+        const uniqueTeachers = getUniqueValues('teacher');
+        const uniqueClassCodes = getUniqueValues('classCode');
+        const uniqueCourseTitles = getUniqueValues('courseTitle');
+
+        const filterFields = [
+        { key: 'day', label: 'Day', type: 'select', options: ['', ...COLUMNS.find(c => c.key === 'day').options] },
+        { key: 'type', label: 'Type', type: 'select', options: ['', ...COLUMNS.find(c => c.key === 'type').options] },
+        { key: 'time', label: 'Time Slot', type: 'datalist', options: uniqueSlots },
+        { key: 'room', label: 'Room', type: 'datalist', options: uniqueRooms },
+        { key: 'levelTerm', label: 'Level–Term', type: 'datalist', options: uniqueLevelTerms },
+        { key: 'section', label: 'Section', type: 'datalist', options: uniqueSections },
+        { key: 'classCode', label: 'Class Code', type: 'datalist', options: uniqueClassCodes },
+        { key: 'courseTitle', label: 'Course Title', type: 'datalist', options: uniqueCourseTitles },
+        { key: 'teacher', label: 'Teacher', type: 'datalist', options: uniqueTeachers }
+        ];
+
+        const filtersHTML = filterFields.map(field => {
+        const currentValue = filters[field.key] || '';
+        if (field.type === 'select') {
+        const optionsHTML = field.options.map(option =>
+        `<option value="${option}" ${option===currentValue ? 'selected' : '' }>${option || 'All'}</option>`
+        ).join('');
+        return `<div class="filter-field">
+            <label>${field.label}</label>
+            <select data-filter="${field.key}">${optionsHTML}</select>
+        </div>`;
+        } else if (field.type === 'datalist') {
+        const datalistId = `datalist-${field.key}`;
+        const optionsHTML = field.options.map(option =>
+        `<option value="${option}">`
+            ).join('');
+            return `<div class="filter-field">
+                <label>${field.label}</label>
+                <input type="text" list="${datalistId}" data-filter="${field.key}" value="${currentValue}"
+                    placeholder="Type or select...">
+                <datalist id="${datalistId}">${optionsHTML}</datalist>
+            </div>`;
+            }
+            }).join('');
+
+            filtersContainer.innerHTML = filtersHTML + `<div class="filter-field"><label>&nbsp;</label><button
+                    class="btn" id="clearFilters">Clear All</button></div>`;
+
+            Array.from(filtersContainer.querySelectorAll('[data-filter]')).forEach(input => {
+            input.addEventListener('input', (e) => {
+            const key = e.target.dataset.filter;
+            const value = e.target.value;
+            if (value) {
+            filters[key] = value;
+            } else {
+            delete filters[key];
+            }
+            applyFiltersAndSort();
+            });
+
+            input.addEventListener('change', (e) => {
+            const key = e.target.dataset.filter;
+            const value = e.target.value;
+            if (value) {
+            filters[key] = value;
+            } else {
+            delete filters[key];
+            }
+            applyFiltersAndSort();
+            });
+            });
+
+            $('#clearFilters').addEventListener('click', () => {
+            filters = {};
+            renderFilters();
+            applyFiltersAndSort();
+            });
+            }
+
+            // Render Filter Chips
+            function renderFilterChips() {
+            const chipsContainer = $('#filterChips');
+            const chipsHTML = Object.entries(filters).map(([key, value]) => {
+            const field = COLUMNS.find(c => c.key === key) || { label: key };
+            return `<div class="chip">${field.label}: <strong>${value}</strong><button
+                    onclick="removeFilter('${key}')">×</button></div>`;
+            }).join('');
+            chipsContainer.innerHTML = chipsHTML;
+            }
+
+            // Remove Filter
+            window.removeFilter = function (key) {
+            delete filters[key];
+            renderFilters();
+            applyFiltersAndSort();
+            };
+
+            // Row Management
+            function showRowModal(rowIndex = null) {
+            const modal = $('#rowModal');
+            const title = $('#rowModalTitle');
+            const form = $('#rowForm');
+
+            editingRowIndex = rowIndex;
+            title.textContent = rowIndex !== null ? 'Edit Class' : 'Add New Class';
+
+            const row = rowIndex !== null ? rows[rowIndex] : {};
+
+            const formHTML = COLUMNS.map(col => {
+            const value = row[col.key] || '';
+            const fieldClass = col.type === 'textarea' ? 'full-width' : '';
+            let inputHTML;
+            if (col.type === 'select') {
+            const optionsHTML = col.options.map(option =>
+            `
+        <option value="${option}" ${option===value ? 'selected' : '' }>${option}</option>`
+        ).join('');
+        inputHTML = `<select name="${col.key}">${optionsHTML}</select>`;
+        } else if (col.type === 'textarea') {
+        inputHTML = `<textarea name="${col.key}" placeholder="${col.placeholder || ''}">${value}</textarea>`;
+        } else {
+        inputHTML = `<input type="text" name="${col.key}" value="${value}" placeholder="${col.placeholder || ''}">`;
+        }
+        return `<div class="form-field ${fieldClass}"><label>${col.label}</label>${inputHTML}</div>`;
+        }).join('');
+
+        form.innerHTML = formHTML;
+        modal.classList.remove('hidden');
+        }
+
+        function hideRowModal() {
+        $('#rowModal').classList.add('hidden');
+        editingRowIndex = null;
+        }
+
+        function saveRow() {
+        const form = $('#rowForm');
+        const formData = new FormData(form);
+        const row = {};
+
+        for (const [key, value] of formData.entries()) {
+        row[key] = value.trim();
+        }
+
+        if (row.time) row.time = parseTime(row.time);
+        if (row.levelTerm) row.levelTerm = parseLevelTerm(row.levelTerm);
+        if (row.teacher) row.teacher = row.teacher.toUpperCase();
+        if (row.section) row.section = row.section.toUpperCase();
+
+        if (!row.day || !row.room || !row.teacher || !row.classCode) {
+        alert('Please fill in required fields: Day, Room, Teacher, Class Code');
+        return;
+        }
+
+        if (editingRowIndex !== null) {
+        rows[editingRowIndex] = row;
+        } else {
+        rows.push(row);
+        }
+
+        saveData(rows);
+        applyFiltersAndSort();
+        renderFilters();
+        hideRowModal();
+        }
+
+        window.editRow = function (index) {
+        showRowModal(index);
+        };
+
+        window.deleteRow = function (index) {
+        if (confirm('Delete this class?')) {
+        rows.splice(index, 1);
+        saveData(rows);
+        applyFiltersAndSort();
+        renderFilters();
+        }
+        };
+
+        // Parse Teacher Info Excel
+        function parseTeacherInfoExcel(workbook) {
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet);
+
+        const teacherMap = {};
+        data.forEach(row => {
+        if (row.Initial && row.Name) {
+        const initial = row.Initial.toString().trim().toUpperCase();
+        teacherMap[initial] = {
+        name: row.Name || '',
+        initial: initial,
+        phone: row['Contact No.'] ? row['Contact No.'].toString() : '',
+        email: row.Email || ''
+        };
+        }
+        });
+
+        return teacherMap;
+        }
+
+        // Handle Teacher Info Import
+        function handleTeacherImport(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+        try {
+        $('#loadingSpinner').style.display = 'inline-block';
+        updateStatus('Importing teacher info...', 'info');
+
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        teacherData = parseTeacherInfoExcel(workbook);
+        saveTeacherData(teacherData);
+
+        updateStatus(`Loaded ${Object.keys(teacherData).length} teachers`, 'success');
+        renderTable(); // Re-render to show clickable links
+        } catch (error) {
+        console.error('Teacher import error:', error);
+        updateStatus('Teacher import failed: ' + error.message, 'error');
+        } finally {
+        $('#loadingSpinner').style.display = 'none';
+        }
+        };
+
+        reader.readAsArrayBuffer(file);
+        }
+
+        // Parse Course Title Excel
+        function parseCourseTitleExcel(workbook) {
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet);
+
+        const courseTitleMap = {};
+        data.forEach(row => {
+        const courseCode = row['Course Code'] || row['Class Code'] || row['Code'];
+        const courseTitle = row['Course Title'] || row['Title'] || row['Course Name'];
+
+        if (courseCode && courseTitle) {
+        const code = courseCode.toString().trim().toUpperCase();
+        const normalizedCode = normalizeCourseCode(code);
+        const title = courseTitle.toString().trim();
+
+        // Store with both original and normalized keys for better matching
+        courseTitleMap[code] = title;
+        if (normalizedCode !== code) {
+        courseTitleMap[normalizedCode] = title;
+        }
+        }
+        });
+
+        return courseTitleMap;
+        }
+
+        // Handle Course Title Import
+        function handleCourseTitleImport(file) {
+        if (!file) {
+        console.log('No file selected');
+        return;
+        }
+
+        console.log('Course title file selected:', file.name);
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+        try {
+        $('#loadingSpinner').style.display = 'inline-block';
+        updateStatus('Importing course titles...', 'info');
+
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        courseTitleData = parseCourseTitleExcel(workbook);
+        saveCourseTitleData(courseTitleData);
+
+        const count = Object.keys(courseTitleData).length;
+        updateStatus(`Loaded ${count} course titles`, 'success');
+        console.log('Course titles loaded:', courseTitleData);
+
+        // Show sample of loaded codes for debugging
+        const sampleCodes = Object.keys(courseTitleData).slice(0, 5);
+        console.log('Sample course codes:', sampleCodes);
+
+        // Auto-fill existing rows
+        const filled = autoFillCourseTitles();
+        if (filled > 0) {
+        renderTable();
+        renderFilters();
+        console.log(`Successfully auto-filled ${filled} course titles`);
+        } else {
+        console.log('No course titles were auto-filled. Check if class codes match.');
+        if (rows.length > 0) {
+        const sampleRowCodes = rows.slice(0, 5).map(r => r.classCode);
+        console.log('Sample class codes in routine:', sampleRowCodes);
+        }
+        }
+        } catch (error) {
+        console.error('Course title import error:', error);
+        updateStatus('Course title import failed: ' + error.message, 'error');
+        alert('Error importing course titles: ' + error.message);
+        } finally {
+        $('#loadingSpinner').style.display = 'none';
+        }
+        };
+
+        reader.onerror = (error) => {
+        console.error('File reader error:', error);
+        updateStatus('Failed to read file', 'error');
+        $('#loadingSpinner').style.display = 'none';
+        };
+
+        reader.readAsArrayBuffer(file);
+        }
+
+        // Excel Import - DIU Format Parser
+        function parseDIUExcel(workbook) {
+        const allClasses = [];
+
+        workbook.SheetNames.forEach(sheetName => {
+        const sheet = workbook.Sheets[sheetName];
+        const day = sheetName.trim();
+
+        // Parse theory classes (rows 4-16)
+        for (let row = 4; row <= 16; row++) { const room=getCellValue(sheet, `B${row}`); if (!room) continue; for (let
+            col=2; col < 50; col +=3) { const slotHeader=getCellValue(sheet, `${getColumnLetter(col)}2`); const
+            levelTerm=getCellValue(sheet, `${getColumnLetter(col)}${row}`); const courseSection=getCellValue(sheet,
+            `${getColumnLetter(col + 1)}${row}`); const teacher=getCellValue(sheet, `${getColumnLetter(col +
+            2)}${row}`); if (levelTerm && courseSection && teacher) { allClasses.push(createClassEntry(day, 'Theory' ,
+            slotHeader, room, levelTerm, courseSection, teacher)); } } } // Parse lab classes (rows 20-31, 34-35) const
+            labRows=[...Array.from({ length: 12 }, (_, i)=> 20 + i), 34, 35];
+            labRows.forEach(row => {
+            const room = getCellValue(sheet, `B${row}`);
+            if (!room) return;
+
+            for (let col = 2; col < 50; col +=3) { const slotHeader=getCellValue(sheet, `${getColumnLetter(col)}18`);
+                const levelTerm=getCellValue(sheet, `${getColumnLetter(col)}${row}`); const
+                courseSection=getCellValue(sheet, `${getColumnLetter(col + 1)}${row}`); const
+                teacher=getCellValue(sheet, `${getColumnLetter(col + 2)}${row}`); if (levelTerm && courseSection &&
+                teacher) { allClasses.push(createClassEntry(day, 'Lab' , slotHeader, room, levelTerm, courseSection,
+                teacher)); } } }); }); return allClasses; } function getCellValue(sheet, cell) { return sheet[cell] ?
+                String(sheet[cell].v).trim() : '' ; } function getColumnLetter(col) { let letter='' ; while (col>= 0) {
+                letter = String.fromCharCode(65 + (col % 26)) + letter;
+                col = Math.floor(col / 26) - 1;
+                }
+                return letter;
+                }
+
+                function createClassEntry(day, type, slot, room, levelTerm, courseSection, teacher) {
+                let section, classCode;
+
+                const lastChar = courseSection.slice(-1);
+                const isLastCharNumber = /\d/.test(lastChar);
+
+                if (type === 'Lab' && isLastCharNumber) {
+                section = courseSection.slice(-2).toUpperCase();
+                classCode = courseSection.slice(0, -2).trim();
+                } else {
+                section = lastChar.toUpperCase();
+                classCode = courseSection.slice(0, -1).trim();
+                }
+
+                let cleanLevelTerm = levelTerm.replace(/[A-Z]$/, '').trim();
+                cleanLevelTerm = parseLevelTerm(cleanLevelTerm);
+
+                // Auto-fill course title if available - try multiple matching strategies
+                let courseTitle = courseTitleData[classCode];
+
+                if (!courseTitle) {
+                const normalizedCode = normalizeCourseCode(classCode);
+                courseTitle = courseTitleData[normalizedCode];
+                }
+
+                if (!courseTitle) {
+                // Search through all keys with normalization
+                for (const [key, value] of Object.entries(courseTitleData)) {
+                if (normalizeCourseCode(key) === normalizeCourseCode(classCode)) {
+                courseTitle = value;
+                break;
+                }
+                }
+                }
+
+                return {
+                day,
+                type,
+                time: slot || '',
+                room,
+                levelTerm: cleanLevelTerm,
+                section,
+                classCode,
+                courseTitle: courseTitle || '',
+                teacher: teacher.toUpperCase(),
+                notes: ''
+                };
+                }
+
+                function handleExcelImport(file) {
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                try {
+                $('#loadingSpinner').style.display = 'inline-block';
+                updateStatus('Importing Excel...', 'info');
+
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const importedRows = parseDIUExcel(workbook);
+
+                if (importedRows.length > 0) {
+                rows = rows.concat(importedRows);
+                saveData(rows);
+                applyFiltersAndSort();
+                renderFilters();
+                updateStatus(`Imported ${importedRows.length} classes`, 'success');
+                } else {
+                updateStatus('No classes found in Excel', 'error');
+                }
+                } catch (error) {
+                console.error('Excel import error:', error);
+                updateStatus('Import failed: ' + error.message, 'error');
+                } finally {
+                $('#loadingSpinner').style.display = 'none';
+                }
+                };
+
+                reader.readAsArrayBuffer(file);
+                }
+
+                // JSON Import/Export
+                function handleJSONImport(file) {
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                try {
+                const data = JSON.parse(e.target.result);
+                if (!Array.isArray(data)) throw new Error('Invalid JSON format');
+                rows = data;
+                saveData(rows);
+                applyFiltersAndSort();
+                renderFilters();
+                updateStatus(`Restored ${rows.length} classes`, 'success');
+                } catch (error) {
+                updateStatus('JSON import failed', 'error');
+                }
+                };
+                reader.readAsText(file);
+                }
+
+                function backupJSON() {
+                const jsonContent = JSON.stringify(rows, null, 2);
+                const blob = new Blob([jsonContent], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `diu_eee_routine_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                updateStatus('Backup downloaded', 'success');
+                }
+
+                // Export System
+                function showColumnSelectionModal(exportType) {
+                currentExportType = exportType;
+                const modal = $('#columnModal');
+                const columnList = $('#columnList');
+
+                const columnsHTML = COLUMNS.map(col => `
+                <div class="column-item">
+                    <input type="checkbox" id="col_${col.key}" value="${col.key}" checked>
+                    <label for="col_${col.key}">${col.label}</label>
+                </div>
+                `).join('');
+
+                columnList.innerHTML = columnsHTML;
+                modal.classList.remove('hidden');
+                }
+
+                function hideColumnSelectionModal() {
+                $('#columnModal').classList.add('hidden');
+                currentExportType = null;
+                }
+
+                function getSelectedColumns() {
+                return $$('#columnList input[type="checkbox"]:checked').map(cb => cb.value);
+                }
+
+                function confirmColumnSelection() {
+                selectedColumns = getSelectedColumns();
+                if (selectedColumns.length === 0) {
+                alert('Please select at least one column');
+                return;
+                }
+
+                const exportType = currentExportType;
+                hideColumnSelectionModal();
+
+                if (exportType === 'excel') {
+                exportExcel();
+                } else if (exportType === 'pdf') {
+                showPDFModal();
+                }
+                }
+
+                // Excel Export
+                function exportExcel() {
+                try {
+                const selectedColumnObjects = COLUMNS.filter(col => selectedColumns.includes(col.key));
+                const headers = selectedColumnObjects.map(col => col.label);
+                const data = [headers];
+
+                filteredRows.forEach(row => {
+                const values = selectedColumnObjects.map(col => row[col.key] || '');
+                data.push(values);
+                });
+
+                if (typeof XLSX === 'undefined') {
+                throw new Error('XLSX library not loaded');
+                }
+
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Routine');
+
+                XLSX.writeFile(wb, `DIU_EEE_Routine_${new Date().toISOString().split('T')[0]}.xlsx`);
+                updateStatus('Excel exported successfully', 'success');
+                } catch (error) {
+                console.error('Excel export error:', error);
+                alert('Excel export failed: ' + error.message);
+                updateStatus('Excel export failed', 'error');
+                }
+                }
+
+                // PDF Export
+                function showPDFModal() {
+                $('#pdfModal').classList.remove('hidden');
+                }
+
+                function hidePDFModal() {
+                $('#pdfModal').classList.add('hidden');
+                }
+
+                function exportPDF() {
+                const colorMode = document.querySelector('input[name="pdfColorMode"]:checked').value;
+                const selectedColumnObjects = COLUMNS.filter(col => selectedColumns.includes(col.key));
+
+                try {
+                if (typeof window.jspdf === 'undefined') {
+                throw new Error('jsPDF library not loaded');
+                }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4');
+
+                const colors = colorMode === 'color' ? {
+                primary: [34, 211, 238],
+                secondary: [52, 211, 153],
+                text: [15, 30, 58],
+                header: [30, 74, 95]
+                } : {
+                primary: [0, 0, 0],
+                secondary: [100, 100, 100],
+                text: [0, 0, 0],
+                header: [0, 0, 0]
+                };
+
+                try {
+                // Use the actual DIU logo if loaded, otherwise use fallback
+                const logoToUse = diuLogoBase64 || DIU_LOGO;
+                doc.addImage(logoToUse, 'PNG', 14, 8, 25, 25);
+                } catch (e) {
+                console.log('Logo not added:', e.message);
+                }
+
+                doc.setFontSize(22);
+                doc.setTextColor(...colors.primary);
+                doc.setFont(undefined, 'bold');
+                doc.text('DIU EEE Routine', 40, 20);
+
+                doc.setFontSize(10);
+                doc.setTextColor(...colors.secondary);
+                doc.setFont(undefined, 'normal');
+                doc.text('Daffodil International University', 40, 26);
+
+                // Check if 'day' column is selected
+                const dayColumnIndex = selectedColumnObjects.findIndex(col => col.key === 'day');
+                const hasDayColumn = dayColumnIndex !== -1;
+
+                const headers = selectedColumnObjects.map(col => col.label);
+                const data = [];
+
+                if (hasDayColumn) {
+                // Group by days and merge day cells
+                let currentDay = null;
+                filteredRows.forEach(row => {
+                const rowData = selectedColumnObjects.map(col => row[col.key] || '');
+
+                // If same day as previous, replace day with empty string for merging effect
+                if (row.day === currentDay) {
+                rowData[dayColumnIndex] = '';
+                } else {
+                currentDay = row.day;
+                }
+
+                data.push(rowData);
+                });
+                } else {
+                // No day column, just export normally
+                filteredRows.forEach(row => {
+                data.push(selectedColumnObjects.map(col => row[col.key] || ''));
+                });
+                }
+
+                doc.autoTable({
+                head: [headers],
+                body: data,
+                startY: 35,
+                theme: colorMode === 'color' ? 'grid' : 'plain',
+                headStyles: {
+                fillColor: colorMode === 'color' ? colors.header : [255, 255, 255],
+                textColor: colorMode === 'color' ? [255, 255, 255] : colors.text,
+                fontStyle: 'bold',
+                lineWidth: 0.1,
+                lineColor: colors.text
+                },
+                bodyStyles: {
+                textColor: colors.text,
+                lineWidth: 0.1,
+                lineColor: colorMode === 'color' ? [200, 200, 200] : colors.text
+                },
+                alternateRowStyles: {
+                fillColor: colorMode === 'color' ? [240, 248, 255] : [255, 255, 255]
+                },
+                didParseCell: function(data) {
+                // Add visual grouping for day cells
+                if (hasDayColumn && data.column.index === dayColumnIndex && data.cell.raw === '') {
+                data.cell.styles.fillColor = colorMode === 'color' ? [240, 248, 255] : [255, 255, 255];
+                }
+                }
+                });
+
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) { doc.setPage(i); doc.setFontSize(8);
+                    doc.setTextColor(...colors.secondary); doc.text( `Exported on: ${new Date().toLocaleString()} | Page
+                    ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 10 ); } doc.save(`DIU_EEE_Routine_${new
+                    Date().toISOString().split('T')[0]}.pdf`); updateStatus('PDF exported', 'success' ); hidePDFModal();
+                    } catch (error) { console.error('PDF export error:', error); updateStatus('PDF export
+                    failed', 'error' ); } } // Clear All function clearAllData() { if (confirm('This will delete ALL
+                    data. Continue?')) { rows=[]; saveData(rows); applyFiltersAndSort(); renderFilters();
+                    updateStatus('All data cleared', 'success' ); } } // Event Listeners function initEventListeners() {
+                    // Developer Info button $('#btnDeveloperInfo')?.addEventListener('click', showDeveloperModal);
+                    $('#closeDeveloperModal')?.addEventListener('click', hideDeveloperModal); // Admin Login/Logout
+                    buttons $('#btnAdminLogin')?.addEventListener('click', showAdminLoginModal);
+                    $('#btnAdminLogout')?.addEventListener('click', handleAdminLogout);
+                    $('#closeAdminLoginModal')?.addEventListener('click', hideAdminLoginModal);
+                    $('#cancelLogin')?.addEventListener('click', hideAdminLoginModal);
+                    $('#confirmLogin')?.addEventListener('click', handleAdminLogin); // Admin login form submission
+                    $('#adminLoginForm')?.addEventListener('submit', (e)=> {
+                    e.preventDefault();
+                    handleAdminLogin();
+                    });
+
+                    // Export buttons
+                    $('#btnExportExcel')?.addEventListener('click', () => showColumnSelectionModal('excel'));
+                    $('#btnExportPDF')?.addEventListener('click', () => showColumnSelectionModal('pdf'));
+                    $('#btnBackupJSON')?.addEventListener('click', backupJSON);
+
+                    // Import buttons
+                    $('#fileExcel').addEventListener('change', (e) => {
+                    handleExcelImport(e.target.files[0]);
+                    e.target.value = '';
+                    });
+
+                    $('#fileTeacher').addEventListener('change', (e) => {
+                    handleTeacherImport(e.target.files[0]);
+                    e.target.value = '';
+                    });
+
+                    const courseTitleInput = $('#fileCourseTitle');
+                    if (courseTitleInput) {
+                    courseTitleInput.addEventListener('change', (e) => {
+                    console.log('Course title file input changed');
+                    handleCourseTitleImport(e.target.files[0]);
+                    e.target.value = '';
+                    });
+                    console.log('Course title import listener attached');
+                    } else {
+                    console.error('Course title input element not found!');
+                    }
+
+                    $('#fileJSON').addEventListener('change', (e) => {
+                    handleJSONImport(e.target.files[0]);
+                    e.target.value = '';
+                    });
+
+                    // Control buttons
+                    $('#btnAddRow').addEventListener('click', () => showRowModal());
+                    $('#btnClearAll').addEventListener('click', clearAllData);
+
+                    // Column selection modal
+                    $('#cancelColumnSelection').addEventListener('click', hideColumnSelectionModal);
+                    $('#confirmColumnSelection').addEventListener('click', confirmColumnSelection);
+                    $('#selectAllColumns').addEventListener('click', () => {
+                    $$('#columnList input[type="checkbox"]').forEach(cb => cb.checked = true);
+                    });
+                    $('#selectNoneColumns').addEventListener('click', () => {
+                    $$('#columnList input[type="checkbox"]').forEach(cb => cb.checked = false);
+                    });
+
+                    // PDF modal
+                    $('#cancelPDFExport').addEventListener('click', hidePDFModal);
+                    $('#confirmPDFExport').addEventListener('click', exportPDF);
+
+                    // Row editor modal
+                    $('#cancelRowEdit').addEventListener('click', hideRowModal);
+                    $('#saveRow').addEventListener('click', saveRow);
+
+                    // Teacher modal
+                    $('#closeTeacherModal').addEventListener('click', hideTeacherModal);
+
+                    // Close modals on overlay click
+                    $('#columnModal').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) hideColumnSelectionModal();
+                    });
+
+                    $('#pdfModal').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) hidePDFModal();
+                    });
+
+                    $('#rowModal').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) hideRowModal();
+                    });
+
+                    $('#teacherModal').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) hideTeacherModal();
+                    });
+
+                    $('#developerModal')?.addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) hideDeveloperModal();
+                    });
+
+                    $('#adminLoginModal')?.addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) hideAdminLoginModal();
+                    });
+
+                    // Teacher link clicks (event delegation)
+                    document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('teacher-link')) {
+                    e.preventDefault();
+                    const initial = e.target.dataset.initial;
+                    showTeacherModal(initial);
+                    }
+                    });
+                    }
+
+                    // Load DIU Logo as Base64
+                    function loadDIULogo() {
+                    const logoImg = $('#diuLogo');
+                    if (logoImg && logoImg.complete && logoImg.naturalWidth > 0) {
+                    try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = logoImg.naturalWidth;
+                    canvas.height = logoImg.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(logoImg, 0, 0);
+                    diuLogoBase64 = canvas.toDataURL('image/png');
+                    } catch (e) {
+                    console.log('Could not convert logo to base64:', e.message);
+                    }
+                    }
+                    }
+
+                    // Initialize Application
+                    function init() {
+                    rows = loadData();
+                    teacherData = loadTeacherData();
+                    courseTitleData = loadCourseTitleData();
+
+                    // Check admin session and update UI
+                    updateUIForAuthState();
+
+                    renderFilters();
+                    applyFiltersAndSort();
+                    initEventListeners();
+
+                    // Load logo for PDF export
+                    const logoImg = $('#diuLogo');
+                    if (logoImg) {
+                    logoImg.addEventListener('load', loadDIULogo);
+                    logoImg.addEventListener('error', () => {
+                    console.log('Logo image not found, using fallback');
+                    });
+                    // If already loaded
+                    if (logoImg.complete) {
+                    loadDIULogo();
+                    }
+                    }
+
+                    if (rows.length === 0) {
+                    updateStatus('No data. Import Excel or add classes manually', 'info');
+                    } else {
+                    updateStatus(`Loaded ${rows.length} classes`, 'success');
+                    }
+
+                    if (Object.keys(teacherData).length > 0) {
+                    console.log(`Loaded ${Object.keys(teacherData).length} teachers`);
+                    }
+
+                    if (Object.keys(courseTitleData).length > 0) {
+                    console.log(`Loaded ${Object.keys(courseTitleData).length} course titles`);
+                    }
+
+                    // Log admin status for debugging
+                    if (isAdminLoggedIn()) {
+                    console.log('Admin session active');
+                    }
+                    }
+
+                    // Start the application when DOM is ready
+                    if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', init);
+                    } else {
+                    init();
+                    }
+                    </script>
+</body>
+
+</html>
