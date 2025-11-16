@@ -1,0 +1,215 @@
+# DIU EEE Routine Manager - Git Ignore File
+
+# ============================================
+# IDE and Editor Folders
+# ============================================
+
+# Kiro IDE
+.kiro/
+.kiro/*
+
+# Visual Studio Code
+.vscode/
+.vscode/*
+*.code-workspace
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+.idea/*
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Atom
+.atom/
+
+# ============================================
+# Operating System Files
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# Temporary and Cache Files
+# ============================================
+
+# General temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.cache
+*.log
+
+# Node modules (if you add any build tools later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ============================================
+# Build and Distribution
+# ============================================
+
+# Build outputs
+dist/
+build/
+out/
+*.min.js
+*.min.css
+
+# ============================================
+# Personal and Sensitive Files
+# ============================================
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Personal notes and drafts
+notes.txt
+TODO.txt
+NOTES.md
+drafts/
+
+# Backup files
+*.backup
+backup/
+backups/
+
+# ============================================
+# Project Specific
+# ============================================
+
+# Old versions (keep only latest)
+v1/
+v2/
+v3/
+v4/
+v5/
+v6/
+# Keep v7.html as it's the current version
+
+# Test files
+test/
+tests/
+*.test.html
+test_*.html
+
+# Sample data files (optional - uncomment if needed)
+# sample_data/
+# test_data/
+
+# Documentation drafts
+docs/drafts/
+*.draft.md
+
+# ============================================
+# Archives and Compressed Files
+# ============================================
+
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.bz2
+
+# ============================================
+# Media Files (if not needed in repo)
+# ============================================
+
+# Uncomment if you don't want to track large media files
+# *.mp4
+# *.avi
+# *.mov
+# *.wmv
+# *.flv
+
+# ============================================
+# Database Files
+# ============================================
+
+*.sqlite
+*.sqlite3
+*.db
+
+# ============================================
+# Logs and Debug Files
+# ============================================
+
+logs/
+*.log
+debug.log
+error.log
+npm-debug.log
+yarn-debug.log
+lerna-debug.log
+
+# ============================================
+# Coverage and Testing
+# ============================================
+
+coverage/
+.nyc_output/
+*.lcov
+
+# ============================================
+# Miscellaneous
+# ============================================
+
+# Thumbnails
+*.thumb
+
+# Lock files
+*.lock
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# ============================================
+# Keep These Files (Exceptions)
+# ============================================
+
+# Force include important files even if they match patterns above
+!.gitkeep
+!README.md
+!LICENSE
+!v7.html
+!diu-logo.png
+!devloper.jpg
